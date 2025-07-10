@@ -28,36 +28,6 @@ export class Checkout {
   }
 
   total(): number {
-    const itemCounts: Record<string, number> = {};
-    const itemWeights: Record<string, number> = {};
-    for (const s of this.scanned) {
-      if (s.weight) {
-        itemWeights[s.item] = (itemWeights[s.item] || 0) + s.weight;
-      } else {
-        itemCounts[s.item] = (itemCounts[s.item] || 0) + 1;
-      }
-    }
-    let total = 0;
-    for (const item in itemCounts) {
-      const special = this.pricing.specials.get(item);
-      if (special && special.type === 'buyNgetM') {
-        const n = special.buy || 0;
-        const m = special.get || 0;
-        const percent = special.percentOff || 0;
-        const count = itemCounts[item];
-        const group = n + m;
-        const price = this.pricing.getPrice(item);
-        const eligibleGroups = Math.floor(count / group);
-        const remainder = count % group;
-        total += eligibleGroups * (n * price + m * price * (1 - percent / 100));
-        total += remainder * price;
-      } else {
-        total += this.pricing.getPrice(item) * itemCounts[item];
-      }
-    }
-    for (const item in itemWeights) {
-      total += this.pricing.getPrice(item, itemWeights[item]);
-    }
-    return total;
+    return this.pricing.calculateTotal(this.scanned);
   }
 } 
